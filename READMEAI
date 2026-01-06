@@ -1,0 +1,236 @@
+You are a senior full-stack engineer building a production-ready local service website template in a GitHub repo (developed in GitHub Codespaces).
+
+GOAL
+Build “Archetype 1 — Appointment Booking (single-location)” as a reusable, modern, high-converting marketing template for appointment businesses (barber, nails, lashes, massage, PT, tutoring, etc.).
+
+STACK (REQUIRED)
+- Next.js (App Router)
+- TypeScript
+- Tailwind CSS
+No CMS. No database. Single config file for all content + behavior.
+
+OUTPUT CONTRACT (ANTI-TRUNCATION)
+You MUST deliver the repo in STAGES. Do NOT omit code “for brevity”.
+Stage A: Repo scaffold + config + layout + libs + SEO endpoints + devcontainer + tooling.
+Stage B: Components/sections + pages (Home, Services, Book, About, Reviews, Contact, Policies, Privacy, Terms, 404).
+Stage C: QA checklist + README + final notes (build/lint/dev).
+
+If you reach output limits mid-stage, STOP and print: “STOPPED AT: <filepath>” so I can resume from that exact file.
+
+QUALITY BAR (MUST PASS)
+- npm run dev
+- npm run build
+- npm run lint
+- No runtime errors.
+- No lorem ipsum. Unknown inputs must be explicit: "TODO:INPUT".
+
+CODE COMMENTARY (FOR AI ITERATION)
+- Add concise comments:
+  - 1–2 line header per file: purpose.
+  - Short “why” comments for non-obvious logic.
+  - TODOs must be explicit: TODO:INPUT or TODO:PROD (with next action).
+- Do not add excessive commentary.
+
+NON-NEGOTIABLE UX RULES
+- Mobile-first.
+- Sticky primary CTA “Book Now” on every page (mobile + desktop) via layout (not per-page).
+- Mobile sticky bar has secondary “Call” tel: link.
+- Add global bottom padding so sticky bar never covers content.
+- /book shows booking action above the fold on mobile.
+- Booking page always includes a visible fallback block: “Having trouble booking? Call/Text”.
+
+MODERN DESIGN ACCEPTANCE CRITERIA (STRICT)
+- Use a consistent container + spacing rhythm across sections.
+- Typography hierarchy: hero 3xl–5xl, readable body, consistent headings.
+- Buttons: primary + secondary with hover + focus-visible.
+- Cards: consistent radius + subtle border/shadow.
+- Homepage MUST follow this exact section order:
+  1) HeroSection (headline, subheadline, exactly 3 bullets, Book CTA, Call link, proof row)
+  2) SocialProofSection (testimonials + review links)
+  3) ServicesSection (top services cards w/ brief copy + link to /book)
+  4) PortfolioSection (REQUIRED: 6-image grid using next/image; placeholders ok)
+  5) FAQSection (3–6 FAQs)
+  6) CTASection (final CTA)
+
+OPTIONAL LIGHTWEIGHT ROUTING (CONFIG-DRIVEN)
+Implement a simple, skippable pre-book selector (NOT a full form).
+If disabled, /book goes straight to embed/link.
+
+CANONICAL FILE TREE (MUST MATCH EXACTLY)
+- src/
+  - app/
+    - layout.tsx
+    - globals.css
+    - page.tsx
+    - services/page.tsx
+    - book/page.tsx
+    - about/page.tsx
+    - reviews/page.tsx
+    - contact/page.tsx
+    - policies/page.tsx
+    - privacy/page.tsx
+    - terms/page.tsx
+    - not-found.tsx
+    - api/lead/route.ts
+    - robots.ts
+    - sitemap.ts
+  - components/
+    - Header.tsx
+    - Footer.tsx
+    - StickyCTA.tsx
+    - JsonLd.tsx
+    - NAP.tsx
+    - ContactMethods.tsx
+    - LeadForm.tsx
+    - SchedulerEmbed.tsx
+    - ProofStack.tsx
+    - Testimonials.tsx
+    - FAQ.tsx
+    - ServiceMenu.tsx
+    - sections/
+      - HeroSection.tsx
+      - SocialProofSection.tsx
+      - ServicesSection.tsx
+      - PortfolioSection.tsx
+      - FAQSection.tsx
+      - CTASection.tsx
+  - config/site.ts
+  - lib/
+    - tracking.ts
+    - analytics.ts
+    - schema.ts
+    - seo.ts
+    - rateLimit.ts
+    - utils.ts
+- public/
+  - portfolio/
+    - 01.jpg
+    - 02.jpg
+    - 03.jpg
+    - 04.jpg
+    - 05.jpg
+    - 06.jpg
+- .devcontainer/devcontainer.json
+- README.md
+- package.json
+- tailwind.config.ts
+- postcss.config.js
+- tsconfig.json
+- eslint.config.* (or .eslintrc.*)
+(Include any additional Next/Tailwind boilerplate files required.)
+
+CONFIG (SINGLE SOURCE OF TRUTH) — EXACT TYPES REQUIRED
+In src/config/site.ts define and export these EXACT interfaces and config object. Do not rename fields.
+
+type BookingEmbedConfig =
+  | { mode: "iframe"; iframeUrl: string }
+  | { mode: "script"; scriptSrc: string; scriptContainerId: string }
+  | { mode: "link"; linkUrl: string; linkLabel?: string };
+
+type AnalyticsConfig =
+  | { provider: "none" }
+  | { provider: "ga4"; ga4MeasurementId: string }
+  | { provider: "plausible"; plausibleDomain: string };
+
+type SpamProtectionConfig = {
+  turnstileEnabled: boolean;
+  turnstileSiteKey?: string;      // TODO:INPUT if enabled
+  turnstileSecretKey?: string;    // TODO:INPUT if enabled
+};
+
+type CopyBlocks = {
+  heroHeadline: string;
+  heroSubheadline: string;
+  heroBullets: [string, string, string];
+  ctaSectionHeadline: string;
+  ctaSectionSubheadline: string;
+};
+
+type ServicesPageCopy = {
+  introHeadline: string;
+  introParagraphs: [string, string, ...string[]]; // must render at least 2 paragraphs
+};
+
+type PreBookingRouting = {
+  enabled: boolean;
+  options: string[]; // e.g. ["Haircut", "Color", "Massage"]
+};
+
+type BookingFallback = {
+  show: boolean;
+  fallbackText: string;
+  allowCall: boolean;
+  allowSms: boolean;
+};
+
+type Portfolio = {
+  enabled: boolean;
+  images: { src: string; alt: string }[]; // must be 6 items when enabled
+};
+
+export interface SiteConfig {
+  baseUrl: string; // e.g. https://example.com (TODO:INPUT)
+  businessName: string;
+  tagline: string;
+  phoneDisplay: string;
+  phoneDial: string;
+  smsDisplay?: string; // optional
+  email?: string;
+
+  address: { serviceAreaOnly: true } | { line1: string; line2?: string; city: string; state: string; zip: string };
+  hours: { day: string; open: string; close: string; closed?: boolean }[];
+  serviceAreaCities: string[];
+
+  services: { name: string; durationMinutes?: number; priceRange?: string; description?: string; category?: string }[];
+  servicesPageCopy: ServicesPageCopy;
+
+  bookingEmbed: BookingEmbedConfig;
+  bookingFallback: BookingFallback;
+  preBookingRouting: PreBookingRouting;
+
+  portfolio: Portfolio;
+
+  proof: { yearsInBusiness?: string; credentials?: string[]; guarantees?: string[] };
+  reviews: { highlightQuotes: { name?: string; text: string }[]; reviewPlatformLinks: { label: string; url: string }[] };
+  faqs: { q: string; a: string }[];
+  policiesCopy: { cancellation: string; noShow: string; deposits: string; latePolicy: string };
+
+  leadRouting: { webhookUrl?: string }; // TODO:INPUT if used
+  seo: { siteTitle: string; titleTemplate: string; metaDescription: string; primaryServiceKeywords: string[]; ogImagePath?: string };
+
+  copy: CopyBlocks;
+  analytics: AnalyticsConfig;
+  spamProtection: SpamProtectionConfig;
+}
+
+export const siteConfig: SiteConfig = { ... }  // populate with TODO:INPUT placeholders
+
+BOOKING / EMBED RULES (DETERMINISTIC)
+- SchedulerEmbed:
+  - iframe mode: iframe + onLoad event booking_embed_loaded
+  - script mode: load script ONLY on /book; render container div; fire booking_embed_loaded after script load
+  - link mode: render primary button opening linkUrl in new tab
+- No eval. No arbitrary “init strings”.
+
+SEO RULES (STRICT)
+- Canonical URLs must be set via Next Metadata API using alternates.canonical.
+- robots.ts must return rules AND include Sitemap: `${baseUrl}/sitemap.xml`.
+- sitemap.ts must include all template routes.
+- Layout sets metadataBase derived from config.baseUrl and sets OG + Twitter basics.
+
+ANALYTICS (STRICT)
+- If GA4 selected: use @next/third-parties/google GoogleAnalytics in layout (do not hand-roll scripts).
+- Standard events:
+  cta_book_click, phone_click, booking_embed_loaded, lead_form_submit, lead_form_success, lead_form_error
+- Track calls should write to console AND provider if enabled.
+
+LEAD FORM + SPAM (STRICT MINIMUM)
+- LeadForm includes honeypot.
+- /api/lead:
+  - reject if honeypot filled
+  - best-effort in-memory rate limiting per IP (include TODO:PROD seam for Redis/Upstash)
+  - sanitize inputs (trim, max lengths)
+  - If Turnstile enabled AND secret key provided: verify token server-side; tokens are short-lived and single-use (do not reuse).
+  - forward to webhookUrl if present; else console.log and return success
+
+NOW EXECUTE STAGE A, then STAGE B, then STAGE C in the same response if possible.
